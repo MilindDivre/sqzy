@@ -8,12 +8,16 @@ welcome issues, bug reports, and pull requests.
 ```bash
 python -m venv .venv
 .venv\Scripts\activate
-pip install -e .
+pip install -e .[test]
 ```
 
 ## Running checks
 
-There are no automated tests yet. If you add tests, include instructions here.
+Run tests with:
+
+```bash
+pytest
+```
 
 ## Pull requests
 
