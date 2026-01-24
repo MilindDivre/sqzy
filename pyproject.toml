@@ -24,7 +24,7 @@ Homepage = "https://github.com/your-org/sqzy"
 Issues = "https://github.com/your-org/sqzy/issues"
 
 [project.optional-dependencies]
-test = ["pytest>=7.0", "pytest-asyncio>=0.21"]
+test = ["pytest>=7.0", "pytest-asyncio>=0.21", "pytest-cov>=4.1"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -32,3 +32,11 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+
+[tool.coverage.run]
+branch = true
+source = ["sqzy"]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true

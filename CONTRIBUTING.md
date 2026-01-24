@@ -16,7 +16,7 @@ pip install -e .[test]
 Run tests with:
 
 ```bash
-pytest
+pytest --cov=sqzy --cov-report=term-missing
 ```
 
 ## Pull requests
