@@ -7,8 +7,6 @@ Semantic Versioning.
 
 ## [Unreleased]
 
-- Initial open source release.
-
 ## [0.1.0] - 2026-01-24
 
-- First public release.
+- Initial open source release.
