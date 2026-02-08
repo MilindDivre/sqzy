@@ -28,6 +28,19 @@ def test_compress_json_preserve_keys() -> None:
     }
 
 
+def test_compress_json_preserve_paths() -> None:
+    data = {"id": 1, "notes": "", "meta": {"notes": "  "}}
+    assert compress_json(data, preserve_paths={"meta.notes"}) == {"id": 1, "meta": {"notes": "  "}}
+
+
+def test_compress_json_tuple_set_support() -> None:
+    data = {"items": (None, "", "ok"), "tags": {"", "a"}, "empty_tuple": (), "empty_set": set()}
+    assert compress_json(data, drop_empty_tuple=True, drop_empty_set=True) == {
+        "items": ("ok",),
+        "tags": {"a"},
+    }
+
+
 def test_compress_json_keeps_empty_when_disabled() -> None:
     data = {"name": "   ", "items": [], "meta": {}}
     assert compress_json(

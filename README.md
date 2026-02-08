@@ -58,7 +58,10 @@ the return value of the wrapped function.
 - `drop_whitespace_only` (bool): remove strings with only whitespace (default `True`)
 - `drop_empty_list` (bool): remove empty lists (default `True`)
 - `drop_empty_dict` (bool): remove empty dicts (default `True`)
+- `drop_empty_tuple` (bool): remove empty tuples (default `False`)
+- `drop_empty_set` (bool): remove empty sets (default `False`)
 - `preserve_keys` (set[str] or list[str]): keep values for specific keys
+- `preserve_paths` (set[str] or list[str]): keep values for specific dotted paths
 
 ## Contributing
 
