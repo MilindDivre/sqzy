@@ -24,9 +24,16 @@ def _compress_value(
     drop_whitespace_only: bool,
     drop_empty_list: bool,
     drop_empty_dict: bool,
+    drop_empty_tuple: bool,
+    drop_empty_set: bool,
     preserve_keys: set[str] | None,
+    preserve_paths: set[tuple[str, ...]] | None,
     current_key: str | None = None,
+    current_path: tuple[str, ...] = (),
 ) -> Any:
+    if preserve_paths and current_path in preserve_paths:
+        return value
+
     if preserve_keys and current_key in preserve_keys:
         return value
 
@@ -46,8 +53,12 @@ def _compress_value(
                 drop_whitespace_only=drop_whitespace_only,
                 drop_empty_list=drop_empty_list,
                 drop_empty_dict=drop_empty_dict,
+                drop_empty_tuple=drop_empty_tuple,
+                drop_empty_set=drop_empty_set,
                 preserve_keys=preserve_keys,
+                preserve_paths=preserve_paths,
                 current_key=str(key),
+                current_path=(*current_path, str(key)),
             )
             if child is not _REMOVE:
                 cleaned[key] = child
@@ -57,7 +68,7 @@ def _compress_value(
 
     if isinstance(value, list):
         cleaned_list = []
-        for item in value:
+        for index, item in enumerate(value):
             child = _compress_value(
                 item,
                 drop_null=drop_null,
@@ -65,13 +76,61 @@ def _compress_value(
                 drop_whitespace_only=drop_whitespace_only,
                 drop_empty_list=drop_empty_list,
                 drop_empty_dict=drop_empty_dict,
+                drop_empty_tuple=drop_empty_tuple,
+                drop_empty_set=drop_empty_set,
                 preserve_keys=preserve_keys,
+                preserve_paths=preserve_paths,
+                current_path=(*current_path, str(index)),
             )
             if child is not _REMOVE:
                 cleaned_list.append(child)
         if drop_empty_list and not cleaned_list:
             return _REMOVE
         return cleaned_list
+
+    if isinstance(value, tuple):
+        cleaned_items = []
+        for index, item in enumerate(value):
+            child = _compress_value(
+                item,
+                drop_null=drop_null,
+                drop_empty_str=drop_empty_str,
+                drop_whitespace_only=drop_whitespace_only,
+                drop_empty_list=drop_empty_list,
+                drop_empty_dict=drop_empty_dict,
+                drop_empty_tuple=drop_empty_tuple,
+                drop_empty_set=drop_empty_set,
+                preserve_keys=preserve_keys,
+                preserve_paths=preserve_paths,
+                current_path=(*current_path, str(index)),
+            )
+            if child is not _REMOVE:
+                cleaned_items.append(child)
+        if drop_empty_tuple and not cleaned_items:
+            return _REMOVE
+        return tuple(cleaned_items)
+
+    if isinstance(value, set):
+        cleaned_items = []
+        for index, item in enumerate(value):
+            child = _compress_value(
+                item,
+                drop_null=drop_null,
+                drop_empty_str=drop_empty_str,
+                drop_whitespace_only=drop_whitespace_only,
+                drop_empty_list=drop_empty_list,
+                drop_empty_dict=drop_empty_dict,
+                drop_empty_tuple=drop_empty_tuple,
+                drop_empty_set=drop_empty_set,
+                preserve_keys=preserve_keys,
+                preserve_paths=preserve_paths,
+                current_path=(*current_path, str(index)),
+            )
+            if child is not _REMOVE:
+                cleaned_items.append(child)
+        if drop_empty_set and not cleaned_items:
+            return _REMOVE
+        return set(cleaned_items)
 
     return value
 
@@ -84,14 +143,27 @@ def compress_json(
     drop_whitespace_only: bool = True,
     drop_empty_list: bool = True,
     drop_empty_dict: bool = True,
+    drop_empty_tuple: bool = False,
+    drop_empty_set: bool = False,
     preserve_keys: Iterable[str] | None = None,
+    preserve_paths: Iterable[str] | None = None,
 ) -> Any:
     """
     Recursively remove null/blank/empty values from JSON-like structures.
 
     Returns the cleaned structure, or None when the entire input is removed.
+    Supports lists, dicts, tuples, and sets.
     """
     preserve_set = set(preserve_keys) if preserve_keys else None
+    preserve_path_set = (
+        {
+            tuple(part for part in str(path).split(".") if part)
+            for path in preserve_paths
+            if str(path)
+        }
+        if preserve_paths
+        else None
+    )
     cleaned = _compress_value(
         data,
         drop_null=drop_null,
@@ -99,7 +171,10 @@ def compress_json(
         drop_whitespace_only=drop_whitespace_only,
         drop_empty_list=drop_empty_list,
         drop_empty_dict=drop_empty_dict,
+        drop_empty_tuple=drop_empty_tuple,
+        drop_empty_set=drop_empty_set,
         preserve_keys=preserve_set,
+        preserve_paths=preserve_path_set,
     )
     return None if cleaned is _REMOVE else cleaned
 
